@@ -26,9 +26,12 @@ public class SkeletonKey : ModuleRules
 
 		PublicDependencyModuleNames.AddRange(
 			new string[]
-			{
-                "Core",
-                "Engine"
+			{	
+				"Core",
+                "CoreUObject",
+                "Engine",
+                "Slate",
+                "ApplicationCore",
 				// ... add other public dependencies that you statically link with here ...
 			}
 			);
@@ -37,7 +40,11 @@ public class SkeletonKey : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
-                "Core"
+				"Core",
+				"CoreUObject",
+				"Engine",
+				"Slate",
+				"ApplicationCore",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

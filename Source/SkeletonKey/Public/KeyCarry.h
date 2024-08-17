@@ -11,38 +11,26 @@
 //Can we replace this with a gameplay tag based mechanism? that would be most elegant by far.
 
 //this is a simple key-carrier that automatically wires the actorkey up.
-UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
+UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), DefaultToInstanced)
 class SKELETONKEY_API UKeyCarry : public UActorComponent
 {
 	GENERATED_BODY()
 	ObjectKey MyObjectKey;
 public:
 	
-	UKeyCarry::UKeyCarry()
+	UKeyCarry()
 	{
 		// While we init, we do not tick. This is a "data only" component. gotta be a better way to do this.
-		PrimaryComponentTick.bCanEverTick = false;
-
+		auto val = PointerHash(GetOwner());
+		ActorKey TopLevelActorKey = ActorKey(val);
+		MyObjectKey = TopLevelActorKey;
+		PrimaryComponentTick.SetTickFunctionEnable(false);
 		// ...
 	}
-
-	// Called when the game starts
-	virtual void InitializeComponent() override
-	{
-		Super::BeginPlay();
-		if(!IsDefaultSubobject())
-		{
-			//elegant little thing, really.
-			auto val = PointerHash(GetOwner());
-			ActorKey TopLevelActorKey = ActorKey(val);
-			MyObjectKey = TopLevelActorKey;
-		}
-		// ...
 	
-	}
 
 	//will return an invalid object key if it fails.
-	static inline ObjectKey Key(AActor* That)
+	static inline ObjectKey KeyOf(AActor* That)
 	{
 	if(That)
 	{
@@ -55,13 +43,14 @@ public:
 	}
 
 	//will return an invalid object key if it fails.
-	static inline ObjectKey Key(UActorComponent* Me)
+	static inline ObjectKey KeyOf(UActorComponent* Me)
 	{
 		if(Me && Me->GetOwner())
 		{
-			if(Me->GetOwner()->GetComponentByClass<UKeyCarry>())
+			auto ptr = Me->GetOwner()->GetComponentByClass<UKeyCarry>();
+			if(ptr)
 			{
-				return Me->GetOwner()->GetComponentByClass<UKeyCarry>()->MyObjectKey;
+				return ptr->MyObjectKey;
 			}
 		}
 		return ObjectKey();
