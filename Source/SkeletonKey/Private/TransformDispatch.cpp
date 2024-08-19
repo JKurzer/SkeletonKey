@@ -5,12 +5,13 @@
 
 UTransformDispatch::UTransformDispatch()
 {
-	ObjectToTransformMapping = MakeShareable(new TMap<ObjectKey, RealAndShadowTransform>);
+	
 }
 
 UTransformDispatch::~UTransformDispatch()
 {
 }
+
 void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original)
 {
 	ObjectToTransformMapping->Add(Target, RealAndShadowTransform(Original, FTransform3d()));
@@ -42,21 +43,19 @@ TStatId UTransformDispatch::GetStatId() const
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UTransformDispatch, STATGROUP_Tickables);
 }
 
-void UTransformDispatch::BeginDestroy()
+
+void UTransformDispatch::Initialize(FSubsystemCollectionBase& Collection)
 {
-	Super::BeginDestroy();
+	Super::Initialize(Collection);
+	
+	ObjectToTransformMapping = MakeShareable(new TMap<ObjectKey, RealAndShadowTransform>);
+	
+	UE_LOG(LogTemp, Warning, TEXT("Shadow Transforms Subsystem: Online"));
 }
 
 void UTransformDispatch::Deinitialize()
 {
 	Super::Deinitialize();
-	
-	ObjectToTransformMapping->Empty();
-}
-
-void UTransformDispatch::FinishDestroy()
-{
-	Super::FinishDestroy();
 }
 
 

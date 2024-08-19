@@ -20,11 +20,11 @@ UCLASS()
 class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
+	ObjectKey DefaultObjectKey;
 	UTransformDispatch();
 	virtual ~UTransformDispatch() override;
 
 public:
-	virtual void BeginDestroy() override;
 	//THIS CREATES A COPY FOR THE SHADOW BUT UPDATES THE SHADOW EVERY TICK.
 	//THIS IS NOT CHEAP.
 	void RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original);
@@ -77,11 +77,10 @@ public:
 	};
 	//this is about as safe as eating live hornets right now.
 
-
+	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	//BEGIN OVERRIDES
 	
 	virtual void Deinitialize() override;
-	virtual void FinishDestroy() override;
 	virtual TStatId GetStatId() const override;
 	virtual void OnWorldBeginPlay(UWorld& InWorld) override;
 	virtual void PostInitialize() override;
