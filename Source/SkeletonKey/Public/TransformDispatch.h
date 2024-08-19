@@ -51,7 +51,8 @@ public:
 		//MARKED SAFE by knock-out testing.
 		while(HoldOpen && !HoldOpen->IsEmpty())
 		{
-			if(auto Update = HoldOpen->Peek())
+			auto Update = HoldOpen->Peek();
+			if(Update)
 			{
 			
 				auto destructure = ObjectToTransformMapping->Find(Update->ObjectKey);
