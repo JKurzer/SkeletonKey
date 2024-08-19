@@ -26,39 +26,6 @@ FTransform3d* UTransformDispatch::GetTransformShadowByObjectKey(ObjectKey Target
 	}
 	return nullptr;
 }
-template <typename TransformQueuePTR>
-void UTransformDispatch::ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
-{
-	//process updates from barrage.
-	auto HoldOpen = TransformUpdateQueue;
-
-	//MARKED SAFE by knock-out testing.
-	while(HoldOpen && !HoldOpen->IsEmpty())
-	{
-		if(auto Update = HoldOpen->Peek())
-		{
-			
-			auto destructure = ObjectToTransformMapping->Find(Update->ObjectKey);
-			const auto& bindOriginal = destructure->Key;
-			bindOriginal->SetTranslation( UE::Math::TVector<double>(Update->Position));
-			bindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
-			HoldOpen->Dequeue();
-		}
-	}
-	
-	for(auto& x : *ObjectToTransformMapping)
-	{
-		auto& destructure = x.Value;
-		const auto& bindConst = destructure.Value;
-		//if the transform hasn't changed, this can explode. honestly, this can just explode. it's just oofa.
-		//we really want the transform delta to be _additive_ but that's gonna take quite a bit more work.
-		//good news, it'll be much faster, cause we'll zero the delta instead? I think? I think? rgh.
-		//it's not a problem atm. mostly.
-		
-		(destructure.Key)->Accumulate(bindConst);
-		destructure.Value = FTransform3d::Identity;
-	}
-}
 
 
 
