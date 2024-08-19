@@ -2,7 +2,9 @@
 
 #include "CoreMinimal.h"
 #include "skeletonize.h"
-
+typedef TPair<FTransform3d*, FTransform3d> RealAndShadowTransform;
+using BristleTime = long; //this will become uint32. don't bitbash this.
+using ArtilleryTime = BristleTime;
 
 //OBJECT KEY DOES NOT SKELETONIZE AUTOMATICALLY. OTHER KEY TYPES MUST DO THAT.
 class ObjectKey

@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CoreTypeKeys.h"
+#include "SkeletonTypes.h"
 #include "Runtime/Engine/Classes/Components/ActorComponent.h"
 #include "KeyCarry.generated.h"
 
