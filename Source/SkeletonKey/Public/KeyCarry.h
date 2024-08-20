@@ -68,6 +68,7 @@ public:
 
 	virtual void BeginDestroy() override
 	{
+		Super::BeginDestroy();
 		if(GetWorld())
 		{
 			if(auto xRef = GetWorld()->GetSubsystem<UTransformDispatch>())
