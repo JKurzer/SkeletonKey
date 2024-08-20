@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FSkeletonKey: public IModuleInterface
+class FSkeletonKeyModule: public IModuleInterface
 {
 public:
 
