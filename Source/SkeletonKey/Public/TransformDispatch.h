@@ -42,6 +42,8 @@ public:
 	TSharedPtr< TMap<ObjectKey, RealAndShadowTransform>> ObjectToTransformMapping;
 
 	FTransform3d*  GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
+	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target);
+
 	template <class TransformQueuePTR>
 	void ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
 	{

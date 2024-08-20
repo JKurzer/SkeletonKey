@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "SkeletonTypes.h"
+#include "TransformDispatch.h"
 #include "Runtime/Engine/Classes/Components/ActorComponent.h"
 #include "KeyCarry.generated.h"
 
@@ -17,18 +18,41 @@ class SKELETONKEY_API UKeyCarry : public UActorComponent
 	GENERATED_BODY()
 	ObjectKey MyObjectKey;
 public:
+	DECLARE_MULTICAST_DELEGATE(ActorKeyIsReady)
+	ActorKeyIsReady Retry_Notify;
+	bool isReady = false;
 	
 	UKeyCarry()
 	{
-		// While we init, we do not tick. This is a "data only" component. gotta be a better way to do this.
+		// While we init, we do not tick more than once.. This is a "data only" component. gotta be a better way to do this.
 		auto val = PointerHash(GetOwner());
 		ActorKey TopLevelActorKey = ActorKey(val);
 		MyObjectKey = TopLevelActorKey;
-		PrimaryComponentTick.SetTickFunctionEnable(false);
 		// ...
 	}
 	
 
+	void AttemptRegister()
+	{
+		if(GetWorld())
+		{
+			if(auto xRef = GetWorld()->GetSubsystem<UTransformDispatch>())
+			{
+				if(auto actorRef = GetOwner())
+				{
+					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetTransform());
+					if(transf)
+					{
+						xRef->RegisterObjectToShadowTransform( MyObjectKey ,transf);
+						isReady = true;
+						Retry_Notify.Broadcast();
+						SetComponentTickEnabled(false);
+					}
+				}
+			}
+		}
+	}
+	
 	//will return an invalid object key if it fails.
 	static inline ObjectKey KeyOf(AActor* That)
 	{
@@ -41,6 +65,46 @@ public:
 	}
 	return ObjectKey();
 	}
+
+	virtual void BeginDestroy() override
+	{
+		if(GetWorld())
+		{
+			if(auto xRef = GetWorld()->GetSubsystem<UTransformDispatch>())
+			{
+				if(auto actorRef = GetOwner())
+				{
+					auto transf = xRef->GetTransformShadowByObjectKey(MyObjectKey);
+					if(transf)
+					{
+						//TODO:  remove goes here.
+					}
+				}
+			}
+		}
+		
+	};
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override
+	{
+		if(!isReady)
+		{
+			AttemptRegister();
+		}
+		else
+		{
+			//shouldn't come up, but in case a refactor makes this case arise:
+			SetComponentTickEnabled(false);
+		}
+	};
+
+
+
+	virtual void InitializeComponent() override
+	{
+		AttemptRegister();
+	};
 
 	//will return an invalid object key if it fails.
 	static inline ObjectKey KeyOf(UActorComponent* Me)
