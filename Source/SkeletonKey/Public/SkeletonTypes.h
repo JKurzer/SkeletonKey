@@ -2,7 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "skeletonize.h"
-typedef TPair<FTransform3d*, FTransform3d> RealAndShadowTransform;
+using RealAndShadowTransform = TPair<FTransform3d*, FTransform3d>;
 using BristleTime = long; //this will become uint32. don't bitbash this.
 using ArtilleryTime = BristleTime;
 
