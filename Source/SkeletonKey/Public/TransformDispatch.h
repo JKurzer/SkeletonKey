@@ -57,10 +57,12 @@ public:
 			if(Update)
 			{
 			
-				auto destructure = ObjectToTransformMapping->Find(Update->ObjectKey);
-				const auto& bindOriginal = destructure->Key;
-				bindOriginal->SetTranslation( UE::Math::TVector<double>(Update->Position));
-				bindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
+				FTransform3d* BindOriginal = GetTransformShadowByObjectKey(Update->ObjectKey);
+				if(BindOriginal)
+				{
+					BindOriginal->SetTranslation( UE::Math::TVector<double>(Update->Position));
+					BindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
+				}
 				HoldOpen->Dequeue();
 			}
 		}

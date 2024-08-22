@@ -21,13 +21,16 @@ public:
 	DECLARE_MULTICAST_DELEGATE(ActorKeyIsReady)
 	ActorKeyIsReady Retry_Notify;
 	bool isReady = false;
+	ObjectKey GetObjectKey()
+	{
+		return MyObjectKey;
+	}
 	
-	UKeyCarry()
+	UKeyCarry(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 	{
 		// While we init, we do not tick more than once.. This is a "data only" component. gotta be a better way to do this.
-		auto val = PointerHash(GetOwner());
-		ActorKey TopLevelActorKey = ActorKey(val);
-		MyObjectKey = TopLevelActorKey;
+
+		PrimaryComponentTick.bCanEverTick = true;
 		// ...
 	}
 	
@@ -40,9 +43,12 @@ public:
 			{
 				if(auto actorRef = GetOwner())
 				{
-					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetTransform());
+					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetActorTransform());
 					if(transf)
 					{
+						auto val = PointerHash(GetOwner());
+						ActorKey TopLevelActorKey = ActorKey(val);
+						MyObjectKey = TopLevelActorKey;
 						xRef->RegisterObjectToShadowTransform( MyObjectKey ,transf);
 						isReady = true;
 						Retry_Notify.Broadcast();
@@ -104,6 +110,7 @@ public:
 
 	virtual void InitializeComponent() override
 	{
+		Super::InitializeComponent();
 		AttemptRegister();
 	};
 
