@@ -2,6 +2,7 @@
 
 #include "CoreMinimal.h"
 #include "skeletonize.h"
+#include "Containers/CircularQueue.h"
 using RealAndShadowTransform = TPair<FTransform3d*, FTransform3d>;
 using BristleTime = long; //this will become uint32. don't bitbash this.
 using ArtilleryTime = BristleTime;
@@ -130,3 +131,16 @@ inline ObjectKey& ObjectKey::operator=(const ActorKey& rhs)
 static bool operator==(ActorKey const& lhs, ActorKey const& rhs) {
 	return (lhs.Obj == rhs.Obj);
 }
+
+struct TransformUpdate
+{
+	ObjectKey ObjectKey;
+	uint64 sequence;
+	FQuat4f Rotation;// this alignment looks wrong. Like outright wrong.
+	FVector3f Velocity;
+	uint32 spline1;
+	FVector3f Position;
+	uint32 spline2;
+};
+
+using TransformUpdatesForGameThread = TCircularQueue<TransformUpdate>;
