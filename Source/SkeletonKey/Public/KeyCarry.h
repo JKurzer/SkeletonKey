@@ -8,10 +8,11 @@
 #include "Runtime/Engine/Classes/Components/ActorComponent.h"
 #include "KeyCarry.generated.h"
 
-
-//Can we replace this with a gameplay tag based mechanism? that would be most elegant by far.
-
 //this is a simple key-carrier that automatically wires the actorkey up.
+//It tries during initialize, and if that fails, it tries again each tick until successful,
+//then turns off ticking for itself. Clients should use the Retry_Notify delegate to register
+//for notification of success in production code, rather than relying on initialization sequencing.
+//Later versions will also set a gameplay tag to indicate that this actor carries a key.
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), DefaultToInstanced)
 class SKELETONKEY_API UKeyCarry : public UActorComponent
 {
@@ -19,7 +20,7 @@ class SKELETONKEY_API UKeyCarry : public UActorComponent
 	ObjectKey MyObjectKey;
 public:
 	DECLARE_MULTICAST_DELEGATE(ActorKeyIsReady)
-	ActorKeyIsReady Retry_Notify;
+	 ActorKeyIsReady Retry_Notify;
 	bool isReady = false;
 	ObjectKey GetObjectKey()
 	{
@@ -31,6 +32,7 @@ public:
 		// While we init, we do not tick more than once.. This is a "data only" component. gotta be a better way to do this.
 
 		PrimaryComponentTick.bCanEverTick = true;
+		bWantsInitializeComponent = true;
 		// ...
 	}
 	
@@ -51,7 +53,10 @@ public:
 						MyObjectKey = TopLevelActorKey;
 						xRef->RegisterObjectToShadowTransform( MyObjectKey ,transf);
 						isReady = true;
-						Retry_Notify.Broadcast();
+						if(Retry_Notify.IsBound())
+						{
+							Retry_Notify.Broadcast();
+						}
 						SetComponentTickEnabled(false);
 					}
 				}
@@ -72,6 +77,41 @@ public:
 	return ObjectKey();
 	}
 
+	virtual void InitializeComponent() override
+	{
+		Super::InitializeComponent();
+		AttemptRegister();
+	};
+
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
+	                           FActorComponentTickFunction* ThisTickFunction) override
+	{
+		//this shouldn't come up often in practice but late initialization can be an issue.
+		if(!isReady)
+		{
+			AttemptRegister();
+		}
+		else
+		{
+			//shouldn't come up, but in case a refactor makes this case arise:
+			SetComponentTickEnabled(false);
+		}
+	};
+
+	//will return an invalid object key if it fails.
+	static inline ObjectKey KeyOf(UActorComponent* Me)
+	{
+		if(Me && Me->GetOwner())
+		{
+			auto ptr = Me->GetOwner()->GetComponentByClass<UKeyCarry>();
+			if(ptr)
+			{
+				return ptr->MyObjectKey;
+			}
+		}
+		return ObjectKey();
+	}
+	
 	virtual void BeginDestroy() override
 	{
 		Super::BeginDestroy();
@@ -91,42 +131,6 @@ public:
 		}
 		
 	};
-
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType,
-	                           FActorComponentTickFunction* ThisTickFunction) override
-	{
-		if(!isReady)
-		{
-			AttemptRegister();
-		}
-		else
-		{
-			//shouldn't come up, but in case a refactor makes this case arise:
-			SetComponentTickEnabled(false);
-		}
-	};
-
-
-
-	virtual void InitializeComponent() override
-	{
-		Super::InitializeComponent();
-		AttemptRegister();
-	};
-
-	//will return an invalid object key if it fails.
-	static inline ObjectKey KeyOf(UActorComponent* Me)
-	{
-		if(Me && Me->GetOwner())
-		{
-			auto ptr = Me->GetOwner()->GetComponentByClass<UKeyCarry>();
-			if(ptr)
-			{
-				return ptr->MyObjectKey;
-			}
-		}
-		return ObjectKey();
-	}
 	
 };
 //UKeyCarry ended up being a much more generic name that I expected.
