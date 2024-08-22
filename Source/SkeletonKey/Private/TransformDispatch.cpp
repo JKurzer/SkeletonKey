@@ -39,7 +39,15 @@ FTransform3d* UTransformDispatch::GetTransformShadowByObjectKey(ObjectKey Target
 }
 
 
-
+FTransform3d* UTransformDispatch::GetOriginalTransformByObjectKey(ObjectKey Target) 
+{
+	auto ref = ObjectToTransformMapping->Find(Target);
+	if(ref)
+	{
+		return (ref->Key);
+	}
+	return nullptr;
+}
 
 
 

@@ -43,6 +43,7 @@ public:
 
 	FTransform3d*  GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
 	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target);
+	FTransform3d* GetOriginalTransformByObjectKey(ObjectKey Target);
 
 	template <class TransformQueuePTR>
 	void ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
@@ -51,13 +52,14 @@ public:
 		auto HoldOpen = TransformUpdateQueue;
 
 		//MARKED SAFE by knock-out testing.
+		//This applies the update from Jolt
 		while(HoldOpen && !HoldOpen->IsEmpty())
 		{
 			auto Update = HoldOpen->Peek();
 			if(Update)
 			{
 			
-				FTransform3d* BindOriginal = GetTransformShadowByObjectKey(Update->ObjectKey);
+				FTransform3d* BindOriginal = GetOriginalTransformByObjectKey(Update->ObjectKey);
 				if(BindOriginal)
 				{
 					BindOriginal->SetTranslation( UE::Math::TVector<double>(Update->Position));
@@ -66,7 +68,9 @@ public:
 				HoldOpen->Dequeue();
 			}
 		}
-	
+
+		//this applies the shadow transform afterwards.
+		//TODO: THIS MUST BE REWORKED.
 		for(auto& x : *ObjectToTransformMapping)
 		{
 			auto& destructure = x.Value;
