@@ -52,6 +52,7 @@ public:
 		auto HoldOpen = TransformUpdateQueue;
 
 		//MARKED SAFE by knock-out testing.
+
 		//This applies the update from Jolt
 		while(HoldOpen && !HoldOpen->IsEmpty())
 		{
@@ -59,10 +60,10 @@ public:
 			if(Update)
 			{
 			
-				FTransform3d* BindOriginal = GetOriginalTransformByObjectKey(Update->ObjectKey);
+				FTransform* BindOriginal = GetOriginalTransformByObjectKey(Update->ObjectKey);
 				if(BindOriginal)
 				{
-					BindOriginal->SetTranslation( UE::Math::TVector<double>(Update->Position));
+					BindOriginal->SetLocation( UE::Math::TVector<double>(Update->Position));
 					BindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
 				}
 				HoldOpen->Dequeue();
@@ -83,6 +84,8 @@ public:
 			(destructure.Key)->Accumulate(bindConst);
 			destructure.Value = FTransform3d::Identity;
 		}
+
+
 	};
 	//this is about as safe as eating live hornets right now.
 

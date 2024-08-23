@@ -43,9 +43,17 @@ public:
 		{
 			if(auto xRef = GetWorld()->GetSubsystem<UTransformDispatch>())
 			{
-				if(auto actorRef = GetOwner())
+				if(TObjectPtr<AActor> actorRef = GetOwner())
 				{
-					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetActorTransform());
+					
+					actorRef->UpdateComponentTransforms();
+					auto a =  actorRef->GetComponentByClass<UStaticMeshComponent>();
+					if(a)
+					{
+						a->bEvaluateWorldPositionOffset = true;
+						a->UpdateInitialEvaluateWorldPositionOffset();
+					}
+					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetTransform());
 					if(transf)
 					{
 						auto val = PointerHash(GetOwner());
