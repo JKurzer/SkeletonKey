@@ -3,7 +3,7 @@
 #include "CoreMinimal.h"
 #include "skeletonize.h"
 #include "Containers/CircularQueue.h"
-using RealAndShadowTransform = TPair<FTransform3d*, FTransform3d>;
+using RealAndShadowTransform = TPair<TObjectPtr<AActor>, FTransform3d>;
 using BristleTime = long; //this will become uint32. don't bitbash this.
 using ArtilleryTime = BristleTime;
 
