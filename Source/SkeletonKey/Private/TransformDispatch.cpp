@@ -17,6 +17,12 @@ void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, FTran
 	ObjectToTransformMapping->Add(Target, KineSimBind(Original, FTransform3d()));
 }
 
+TOptional<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
+{
+	auto m = ObjectToTransformMapping->Find(Target);
+	return m ? m->Get() : TOptional<Kine>();
+}
+
 
 FTransform3d* UTransformDispatch::GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now) 
 {

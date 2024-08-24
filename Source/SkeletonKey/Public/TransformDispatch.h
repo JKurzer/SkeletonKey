@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Kines.h"
 #include "SkeletonTypes.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "TransformDispatch.generated.h"
@@ -29,64 +30,22 @@ public:
 	//THIS IS NOT CHEAP.
 	void RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original);
 
+	TOptional<Kine> GetKineByObjectKey(ObjectKey Target);
 	//OBJECT TO TRANSFORM MAPPING IS CALLED FROM MANY THREADS
-	//We can't touch the uobjects, but the ftransforms are simply PODs.
-	//by modifying a shadow transform rather than the actual transform, we can avoid a data contention.
-	//by using a gamesim transform AND a separate gamedisplay transform, we can actually do this. 
-	//this likely needs to be a write-safe conc data structure for true speed.
-	//we might be able to completely remove the risk by parenting the display transform to the shadow transform, but
-	// that has its own problems.
-	//I'm considering GrowOnlyLockFreeHash.h
-	//temporarily, I'm just locking and prayin', prayin and lockin'. 
+	//Unfortunately, we ended up needed to hide an actor ref inside the Kine. This means that it's risky at best
+	//to call get transform on a kine off the game thread. I'm working on a solution for this. This is still touched
+	//off thread, mostly in a read op-fashion. Relative Shadow can be safely modified.
+	//However, because the kine combines the shadow into the key, it's a little easier to consider what locking scheme
+	//we might use. 
 	//todo: add proper shadowing either with a conserved transform (OUGH) or something clever. good luck.
-	TSharedPtr< TMap<ObjectKey, KineSimBind>> ObjectToTransformMapping;
+	TSharedPtr< KineLookup> ObjectToTransformMapping;
 
-	FTransform3d*  GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
+	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
 	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target);
 	FTransform3d* GetOriginalTransformByObjectKey(ObjectKey Target);
 
 	template <class TransformQueuePTR>
-	void ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
-	{
-		//process updates from barrage.
-		auto HoldOpen = TransformUpdateQueue;
-
-		//MARKED SAFE by knock-out testing.
-
-		//This applies the update from Jolt
-		while(HoldOpen && !HoldOpen->IsEmpty())
-		{
-			auto Update = HoldOpen->Peek();
-			if(Update)
-			{
-			
-				FTransform* BindOriginal = GetOriginalTransformByObjectKey(Update->ObjectKey);
-				if(BindOriginal)
-				{
-					BindOriginal->SetLocation( UE::Math::TVector<double>(Update->Position));
-					BindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
-				}
-				HoldOpen->Dequeue();
-			}
-		}
-
-		//this applies the shadow transform afterwards.
-		//TODO: THIS MUST BE REWORKED.
-		for(auto& x : *ObjectToTransformMapping)
-		{
-			auto& destructure = x.Value;
-			const auto& bindConst = destructure.Value;
-			//if the transform hasn't changed, this can explode. honestly, this can just explode. it's just oofa.
-			//we really want the transform delta to be _additive_ but that's gonna take quite a bit more work.
-			//good news, it'll be much faster, cause we'll zero the delta instead? I think? I think? rgh.
-			//it's not a problem atm. mostly.
-		
-			(destructure.Key)->Accumulate(bindConst);
-			destructure.Value = FTransform3d::Identity;
-		}
-
-
-	};
+	void ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue);;
 	//this is about as safe as eating live hornets right now.
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
@@ -99,3 +58,47 @@ public:
 	virtual void PostLoad() override;
 	virtual void Tick(float DeltaTime) override;
 };
+
+template <class TransformQueuePTR>
+void UTransformDispatch::ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
+{
+	//process updates from barrage.
+	auto HoldOpen = TransformUpdateQueue;
+
+	//MARKED SAFE by knock-out testing.
+
+	//This applies the update from Jolt
+	while(HoldOpen && !HoldOpen->IsEmpty())
+	{
+		auto Update = HoldOpen->Peek();
+		if(Update)
+		{
+			if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey))
+			{
+				BindOriginal->SetLocation( UE::Math::TVector<double>(Update->Position));
+				BindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
+			}
+			HoldOpen->Dequeue();
+		}
+	}
+
+	//this applies the shadow transform afterwards.
+	//TODO: THIS MUST BE REWORKED.
+	for(auto& x : *ObjectToTransformMapping)
+	{
+		auto& kine = x.Value;
+		//if the transform hasn't changed, this can explode. honestly, this can just explode. it's just oofa.
+		//we really want the transform delta to be _additive_ but that's gonna take quite a bit more work.
+		//good news, it'll be much faster, cause we'll zero the delta instead? I think? I think? rgh.
+		//it's not a problem atm. mostly.
+		auto current = kine->CopyOfTransformlike();
+		if(current.IsSet())
+		{
+			current->Accumulate(kine->RelativeShadow);
+			kine->SetTransformlike(current.GetValue());
+		}
+		kine->RelativeShadow = FTransform3d::Identity;
+	}
+
+
+}

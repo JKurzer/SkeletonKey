@@ -7,7 +7,7 @@ public:
 	virtual ~KinePair() = default;
 	ObjectKey MyKey;
 	//USE FBUPDATES or FBINPUTS. This is provided for legacy reasons and to make kines useful if you do not use Artillery Barrage.
-	FTransform Shadow;
+	FTransform RelativeShadow;
 };
 
 class KinematicRef : public KinePair
