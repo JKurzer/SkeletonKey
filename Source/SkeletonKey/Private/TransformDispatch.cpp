@@ -14,7 +14,7 @@ UTransformDispatch::~UTransformDispatch()
 
 void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original)
 {
-	ObjectToTransformMapping->Add(Target, RealAndShadowTransform(Original, FTransform3d()));
+	ObjectToTransformMapping->Add(Target, KineSimBind(Original, FTransform3d()));
 }
 
 
@@ -64,7 +64,7 @@ void UTransformDispatch::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 	
-	ObjectToTransformMapping = MakeShareable(new TMap<ObjectKey, RealAndShadowTransform>);
+	ObjectToTransformMapping = MakeShareable(new TMap<ObjectKey, KineSimBind>);
 	
 	UE_LOG(LogTemp, Warning, TEXT("Shadow Transforms Subsystem: Online"));
 }

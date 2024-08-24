@@ -39,7 +39,7 @@ public:
 	//I'm considering GrowOnlyLockFreeHash.h
 	//temporarily, I'm just locking and prayin', prayin and lockin'. 
 	//todo: add proper shadowing either with a conserved transform (OUGH) or something clever. good luck.
-	TSharedPtr< TMap<ObjectKey, RealAndShadowTransform>> ObjectToTransformMapping;
+	TSharedPtr< TMap<ObjectKey, KineSimBind>> ObjectToTransformMapping;
 
 	FTransform3d*  GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
 	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target);
