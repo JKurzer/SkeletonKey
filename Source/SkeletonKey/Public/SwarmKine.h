@@ -3,6 +3,7 @@
 #include "Kines.h"
 #include "CoreMinimal.h"
 #include "Components/InstancedStaticMeshComponent.h"
+#include "SwarmKine.generated.h"
 
 class UObject;
 
@@ -11,6 +12,7 @@ class UObject;
 UCLASS()
 class SKELETONKEY_API UAUKineManager : public UInstancedStaticMeshComponent
 {
+	GENERATED_BODY()
 public:
 	explicit UAUKineManager()
 		: KeyToMesh(), MeshToKey()
@@ -55,9 +57,11 @@ class SwarmKine : public Kine
 
 	TWeakObjectPtr<UAUKineManager> MyManager;
 
-	virtual TOptional<FTransform> CopyOfTransformlike() override
+public:
+	explicit SwarmKine(const TWeakObjectPtr<UAUKineManager>& MyManager, const ObjectKey& MeshInstanceKey)
+		: MyManager(MyManager)
 	{
-		return MyManager->GetTransformCopy(MyKey);
+		MyKey  = MeshInstanceKey;
 	}
 
 	virtual void SetTransformlike(FTransform Input) override
@@ -84,4 +88,12 @@ class SwarmKine : public Kine
 			MyManager->SetTransformOnInstance(MyKey, m.GetValue());
 		}	
 	}
+	
+protected:
+	virtual TOptional<FTransform> CopyOfTransformlike_Impl() override
+	{
+		return MyManager->GetTransformCopy(MyKey);
+	}
+
+
 };

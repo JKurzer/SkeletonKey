@@ -30,7 +30,6 @@ public:
 	UKeyCarry(const FObjectInitializer& ObjectInitializer) : Super(ObjectInitializer)
 	{
 		// While we init, we do not tick more than once.. This is a "data only" component. gotta be a better way to do this.
-
 		PrimaryComponentTick.bCanEverTick = true;
 		bWantsInitializeComponent = true;
 		// ...
@@ -53,13 +52,12 @@ public:
 						a->bEvaluateWorldPositionOffset = true;
 						a->UpdateInitialEvaluateWorldPositionOffset();
 					}
-					FTransform3d* transf = const_cast<FTransform3d*>(&actorRef->GetTransform());
-					if(transf)
+					if(actorRef)
 					{
 						auto val = PointerHash(GetOwner());
 						ActorKey TopLevelActorKey = ActorKey(val);
 						MyObjectKey = TopLevelActorKey;
-						xRef->RegisterObjectToShadowTransform( MyObjectKey ,transf);
+						xRef->RegisterObjectToShadowTransform(MyObjectKey ,actorRef);
 						isReady = true;
 						if(Retry_Notify.IsBound())
 						{
@@ -127,17 +125,9 @@ public:
 		{
 			if(auto xRef = GetWorld()->GetSubsystem<UTransformDispatch>())
 			{
-				if(auto actorRef = GetOwner())
-				{
-					auto transf = xRef->GetTransformShadowByObjectKey(MyObjectKey);
-					if(transf)
-					{
-						//TODO:  remove goes here.
-					}
-				}
+				xRef->ReleaseKineByKey(MyObjectKey);
 			}
 		}
-		
 	};
 	
 };

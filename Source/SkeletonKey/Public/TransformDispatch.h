@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Kines.h"
 #include "SkeletonTypes.h"
+#include "SwarmKine.h"
 #include "Subsystems/WorldSubsystem.h"
 #include "TransformDispatch.generated.h"
 
@@ -28,25 +29,25 @@ class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 public:
 	//THIS CREATES A COPY FOR THE SHADOW BUT UPDATES THE SHADOW EVERY TICK.
 	//THIS IS NOT CHEAP.
-	void RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original);
+	void RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Original) const;
+	void RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const;
 
 	TOptional<Kine> GetKineByObjectKey(ObjectKey Target);
 	//OBJECT TO TRANSFORM MAPPING IS CALLED FROM MANY THREADS
 	//Unfortunately, we ended up needed to hide an actor ref inside the Kine. This means that it's risky at best
-	//to call get transform on a kine off the game thread. I'm working on a solution for this. This is still touched
-	//off thread, mostly in a read op-fashion. Relative Shadow can be safely modified.
-	//However, because the kine combines the shadow into the key, it's a little easier to consider what locking scheme
-	//we might use. 
-	//todo: add proper shadowing either with a conserved transform (OUGH) or something clever. good luck.
+	//to call get transform on a kine off the game thread. This might be an actual blocker. There's a way around it, but I'm not in love with it.
+	//todo: add proper shadowing with a **readonly** const copy of the transform after update? That allows us to totally hide barrage
 	TSharedPtr< KineLookup> ObjectToTransformMapping;
+	
+	void ReleaseKineByKey(ObjectKey Target);
 
-	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now);
-	FTransform3d* GetTransformShadowByObjectKey(ObjectKey Target);
-	FTransform3d* GetOriginalTransformByObjectKey(ObjectKey Target);
+	//right now, this is only a helper method, but if we add the read-only copy in the kine itself, we could conceivably
+	//use this as a one-frame conserve without a lock. 
+	TOptional<FTransform3d> CopyOfTransformByObjectKey(ObjectKey Target);
 
+	//it's not clear if this can be made safe to call off gamethread. It's an unfortunate state of affairs to be sure.
 	template <class TransformQueuePTR>
-	void ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue);;
-	//this is about as safe as eating live hornets right now.
+	void ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	//BEGIN OVERRIDES
@@ -60,7 +61,7 @@ public:
 };
 
 template <class TransformQueuePTR>
-void UTransformDispatch::ApplyShadowTransforms(TransformQueuePTR TransformUpdateQueue)
+void UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue)
 {
 	//process updates from barrage.
 	auto HoldOpen = TransformUpdateQueue;
@@ -81,24 +82,5 @@ void UTransformDispatch::ApplyShadowTransforms(TransformQueuePTR TransformUpdate
 			HoldOpen->Dequeue();
 		}
 	}
-
-	//this applies the shadow transform afterwards.
-	//TODO: THIS MUST BE REWORKED.
-	for(auto& x : *ObjectToTransformMapping)
-	{
-		auto& kine = x.Value;
-		//if the transform hasn't changed, this can explode. honestly, this can just explode. it's just oofa.
-		//we really want the transform delta to be _additive_ but that's gonna take quite a bit more work.
-		//good news, it'll be much faster, cause we'll zero the delta instead? I think? I think? rgh.
-		//it's not a problem atm. mostly.
-		auto current = kine->CopyOfTransformlike();
-		if(current.IsSet())
-		{
-			current->Accumulate(kine->RelativeShadow);
-			kine->SetTransformlike(current.GetValue());
-		}
-		kine->RelativeShadow = FTransform3d::Identity;
-	}
-
-
+	
 }

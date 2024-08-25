@@ -1,7 +1,6 @@
 // Fill out your copyright notice in the Description page of Project Settings.
-
-
 #include "TransformDispatch.h"
+#include "SwarmKine.h"
 
 UTransformDispatch::UTransformDispatch()
 {
@@ -10,11 +9,21 @@ UTransformDispatch::UTransformDispatch()
 
 UTransformDispatch::~UTransformDispatch()
 {
+	
 }
 
-void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, FTransform3d* Original)
+void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Self) const
 {
-	ObjectToTransformMapping->Add(Target, KineSimBind(Original, FTransform3d()));
+	//explicitly cast to parent type.
+	TSharedPtr<Kine> kine = MakeShareable<ActorKine>(new ActorKine(Self, Target));
+	ObjectToTransformMapping->Add(Target, kine);
+}
+
+void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const
+{
+	//explicitly cast to parent type.
+	TSharedPtr<Kine> kine = MakeShareable<SwarmKine>(new SwarmKine(Manager, Target));
+	ObjectToTransformMapping->Add(Target, kine);
 }
 
 TOptional<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
@@ -23,55 +32,31 @@ TOptional<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
 	return m ? m->Get() : TOptional<Kine>();
 }
 
+//actual release happens 
+void UTransformDispatch::ReleaseKineByKey(ObjectKey Target)
+{
+	ObjectToTransformMapping->Find(Target)->Get()->MyKey = ObjectKey();
+}
 
-FTransform3d* UTransformDispatch::GetTransformShadowByObjectKey(ObjectKey Target, ArtilleryTime Now) 
+TOptional<FTransform> UTransformDispatch::CopyOfTransformByObjectKey(ObjectKey Target) 
 {
 	auto ref = ObjectToTransformMapping->Find(Target);
 	if(ref)
 	{
-		return &(ref->Value);
+		return ref->Get()->CopyOfTransformLike();
 	}
-	return nullptr;
+	return TOptional<FTransform>();
 }
-
-FTransform3d* UTransformDispatch::GetTransformShadowByObjectKey(ObjectKey Target) 
-{
-	auto ref = ObjectToTransformMapping->Find(Target);
-	if(ref)
-	{
-		return &(ref->Value);
-	}
-	return nullptr;
-}
-
-
-FTransform3d* UTransformDispatch::GetOriginalTransformByObjectKey(ObjectKey Target) 
-{
-	auto ref = ObjectToTransformMapping->Find(Target);
-	if(ref)
-	{
-		return (ref->Key);
-	}
-	return nullptr;
-}
-
-
-
-
-
 
 TStatId UTransformDispatch::GetStatId() const
 {
 	RETURN_QUICK_DECLARE_CYCLE_STAT(UTransformDispatch, STATGROUP_Tickables);
 }
 
-
 void UTransformDispatch::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	
-	ObjectToTransformMapping = MakeShareable(new TMap<ObjectKey, KineSimBind>);
-	
+	ObjectToTransformMapping = MakeShareable(new KineLookup());
 	UE_LOG(LogTemp, Warning, TEXT("Shadow Transforms Subsystem: Online"));
 }
 
@@ -79,8 +64,6 @@ void UTransformDispatch::Deinitialize()
 {
 	Super::Deinitialize();
 }
-
-
 
 void UTransformDispatch::OnWorldBeginPlay(UWorld& InWorld)
 {
