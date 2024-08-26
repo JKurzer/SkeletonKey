@@ -44,8 +44,8 @@ void UTransformDispatch::ReleaseKineByKey(ObjectKey Target)
 		auto HoldOpen = ObjectToTransformMapping;
 		if(HoldOpen)
 		{
-			auto ref = HoldOpen->Find(Target);
-			if(ref){
+			TSharedPtr<Kine>* ref = HoldOpen->Find(Target);
+			if(ref && *ref){
 				ref->Get()->MyKey = ObjectKey();
 			}
 		}
