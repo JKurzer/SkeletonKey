@@ -26,16 +26,30 @@ void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, UAUKi
 	ObjectToTransformMapping->Add(Target, kine);
 }
 
-TOptional<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
+TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
 {
-	auto m = ObjectToTransformMapping->Find(Target);
-	return m ? m->Get() : TOptional<Kine>();
+	auto ref = ObjectToTransformMapping->Find(Target);
+	if(ref)
+	{
+		return  *ref;
+	}
+	return nullptr;
 }
 
 //actual release happens 
 void UTransformDispatch::ReleaseKineByKey(ObjectKey Target)
 {
-	ObjectToTransformMapping->Find(Target)->Get()->MyKey = ObjectKey();
+	if(Target)
+	{
+		auto HoldOpen = ObjectToTransformMapping;
+		if(HoldOpen)
+		{
+			auto ref = HoldOpen->Find(Target);
+			if(ref){
+				ref->Get()->MyKey = ObjectKey();
+			}
+		}
+	}
 }
 
 TOptional<FTransform> UTransformDispatch::CopyOfTransformByObjectKey(ObjectKey Target) 

@@ -23,6 +23,7 @@ public:
 	virtual void SetTransformlike(FTransform Input) = 0;
 	virtual void SetLocation( FVector3d Location) = 0;
 	virtual void SetRotation (FQuat4d Rotation) = 0;
+	bool IsNull() const { return MyKey == 0;}
 protected:
 	virtual TOptional<FTransform> CopyOfTransformlike_Impl() = 0;
 };

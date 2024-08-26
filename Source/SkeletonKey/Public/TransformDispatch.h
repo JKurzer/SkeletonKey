@@ -32,7 +32,7 @@ public:
 	void RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Original) const;
 	void RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const;
 
-	TOptional<Kine> GetKineByObjectKey(ObjectKey Target);
+	TSharedPtr<Kine> GetKineByObjectKey(ObjectKey Target);
 	//OBJECT TO TRANSFORM MAPPING IS CALLED FROM MANY THREADS
 	//Unfortunately, we ended up needed to hide an actor ref inside the Kine. This means that it's risky at best
 	//to call get transform on a kine off the game thread. This might be an actual blocker. There's a way around it, but I'm not in love with it.
