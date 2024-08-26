@@ -66,8 +66,6 @@ void UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdate
 	//process updates from barrage.
 	auto HoldOpen = TransformUpdateQueue;
 
-	//MARKED SAFE by knock-out testing.
-
 	//This applies the update from Jolt
 	while(HoldOpen && !HoldOpen->IsEmpty())
 	{
