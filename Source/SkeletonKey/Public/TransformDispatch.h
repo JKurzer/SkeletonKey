@@ -38,7 +38,7 @@ public:
 	//to call get transform on a kine off the game thread. This might be an actual blocker. There's a way around it, but I'm not in love with it.
 	//todo: add proper shadowing with a **readonly** const copy of the transform after update? That allows us to totally hide barrage
 	TSharedPtr< KineLookup> ObjectToTransformMapping;
-	
+	FEventRef BlockRampant;
 	void ReleaseKineByKey(ObjectKey Target);
 
 	//right now, this is only a helper method, but if we add the read-only copy in the kine itself, we could conceivably
@@ -50,6 +50,7 @@ public:
 	bool ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	void BlockRampancy(UWorld* that);
 	//BEGIN OVERRIDES
 	
 	virtual void Deinitialize() override;
@@ -63,7 +64,7 @@ public:
 template <class TransformQueuePTR>
 bool UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue)
 {
-	if(GetWorld())
+	if(GetWorld() && !GetWorld()->bPostTickComponentUpdate)
 	{
 		//process updates from barrage.
 		auto HoldOpen = TransformUpdateQueue;
@@ -76,8 +77,10 @@ bool UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdate
 			{
 				try
 				{
-					if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey))
+					if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey) )
 					{
+//						auto temp = GetWorld()->bPostTickComponentUpdate;
+						GetWorld()->bPostTickComponentUpdate = 0;
 						BindOriginal->SetLocationAndRotation( UE::Math::TVector<double>(Update->Position), UE::Math::TQuat<double>(Update->Rotation));
 					}
 					HoldOpen->Dequeue();

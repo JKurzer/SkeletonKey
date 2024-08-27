@@ -1,13 +1,16 @@
 ﻿#pragma once
-#include "SkeletonTypes.h"
 
-class KineData
+#include "SkeletonTypes.h"
+#include "Editor/DetailCustomizations/Private/ActorComponentDetails.h"
+
+class KineData 
 {
 public:
 	virtual ~KineData() = default;
 	ObjectKey MyKey; 
 	//USE FBUPDATES or FBINPUTS. This is provided for legacy reasons and to make kines useful if you do not use Artillery Barrage.
 };
+
 
 class KinematicRef : public KineData
 {
@@ -32,14 +35,22 @@ protected:
 //This constant-time single-layer reflection trick allows runtime typesafety without allowing deep hierarchy.
 using Kine = KinematicRef;
 
-
-
+class ActorKine;
+//oh boy. this template specialization lets us backdoor UActorComponent because FActorComponentTickFunction is a Friend class of UActorComponent.
+//So a template specialization can actually act as though it were a true "friend" class member. I don't think this guy's anyone's friend, though.
+// template <>
+// inline void FActorComponentTickFunction::ExecuteTickHelper<ActorKine>(UActorComponent* Target, bool bTickInEditor, float DeltaTime, ELevelTick TickType, const ActorKine& ExecuteTickFunc)
+// {
+// 	//technically. very technically... this does help us tick. technically. Not.... in the intended way.
+// //
+// }
 
 class ActorKine : public Kine
 {
+	//static inline FActorComponentTickFunction FALSEHOOD_MALEVOLENCE_TRICKERY = FActorComponentTickFunction();
 public:
 	TWeakObjectPtr<AActor> MySelf;
-
+	
 	explicit ActorKine(const TWeakObjectPtr<AActor>& MySelf, const ActorKey& Target)
 		: MySelf(MySelf)
 	{
@@ -55,10 +66,12 @@ public:
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
+				//this doesn't do what it looks like. Check the specialization above. I'm really sorry, but I needed a part of the API that wasn't likely to change.
 				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
 				transform.SetLocation(Loc);
 				transform.SetRotation(Rot);
-				Ref->MarkRenderStateDirty();
+				Ref->MarkRenderTransformDirty();
+				//FALSEHOOD_MALEVOLENCE_TRICKERY.ExecuteTickHelper<ActorKine>(Ref, false, 0, ELevelTick::LEVELTICK_PauseTick, *this);
 			}
 		}
 	}
@@ -104,5 +117,6 @@ public:
 		}
 	}
 };
+
 
 using KineLookup = TMap<ObjectKey, TSharedPtr<Kine>>;
