@@ -47,7 +47,7 @@ public:
 
 	//it's not clear if this can be made safe to call off gamethread. It's an unfortunate state of affairs to be sure.
 	template <class TransformQueuePTR>
-	void ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue);
+	bool ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue);
 
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
 	//BEGIN OVERRIDES
@@ -61,23 +61,34 @@ public:
 };
 
 template <class TransformQueuePTR>
-void UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue)
+bool UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdateQueue)
 {
-	//process updates from barrage.
-	auto HoldOpen = TransformUpdateQueue;
-
-	//This applies the update from Jolt
-	while(HoldOpen && !HoldOpen->IsEmpty())
+	if(GetWorld())
 	{
-		auto Update = HoldOpen->Peek();
-		if(Update)
+		//process updates from barrage.
+		auto HoldOpen = TransformUpdateQueue;
+
+		//This applies the update from Jolt
+		while(HoldOpen && !HoldOpen->IsEmpty() && !GetWorld()->bPostTickComponentUpdate)
 		{
-			if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey))
+			auto Update = HoldOpen->Peek();
+			if(Update && !GetWorld()->bPostTickComponentUpdate)
 			{
-				BindOriginal->SetLocationAndRotation( UE::Math::TVector<double>(Update->Position), UE::Math::TQuat<double>(Update->Rotation));
+				try
+				{
+					if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey))
+					{
+						BindOriginal->SetLocationAndRotation( UE::Math::TVector<double>(Update->Position), UE::Math::TQuat<double>(Update->Rotation));
+					}
+					HoldOpen->Dequeue();
+				}
+				catch (...)
+				{
+					return false; //we'll be back! we'll be back!!!!
+				}
 			}
-			HoldOpen->Dequeue();
 		}
+		return true;
 	}
-	
+	return false;
 }

@@ -52,7 +52,14 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			Pin->SetActorLocationAndRotation(Loc, Rot, false, nullptr, ETeleportType::None);
+			auto Ref = Pin->GetRootComponent();
+			if(Ref)
+			{
+				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
+				transform.SetLocation(Loc);
+				transform.SetRotation(Rot);
+				Ref->MarkRenderStateDirty();
+			}
 		}
 	}
 
