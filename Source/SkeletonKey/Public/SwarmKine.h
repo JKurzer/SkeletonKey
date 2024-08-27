@@ -69,6 +69,17 @@ public:
 		MyManager->SetTransformOnInstance(MyKey, Input);
 	}
 
+	virtual void SetLocationAndRotation(FVector3d Loc, FQuat4d Rot) override
+	{
+		auto m = MyManager->GetTransformCopy(MyKey);
+		if(m.IsSet())
+		{
+			m->SetLocation(Loc);
+			m->SetRotation(Rot);
+			MyManager->SetTransformOnInstance(MyKey, m.GetValue());
+		}	
+	}
+
 	virtual void SetLocation(FVector3d Location) override
 	{
 		auto m = MyManager->GetTransformCopy(MyKey);

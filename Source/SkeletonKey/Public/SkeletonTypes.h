@@ -136,10 +136,8 @@ struct TransformUpdate
 	ObjectKey ObjectKey;
 	uint64 sequence;
 	FQuat4f Rotation;// this alignment looks wrong. Like outright wrong.
-	FVector3f Velocity;
-	uint32 spline1;
 	FVector3f Position;
-	uint32 spline2;
+	uint32 speed;// unused at the moment, here to support smearing if needed.
 };
 
 using TransformUpdatesForGameThread = TCircularQueue<TransformUpdate>;

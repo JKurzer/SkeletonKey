@@ -74,8 +74,7 @@ void UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdate
 		{
 			if(TSharedPtr<Kine> BindOriginal = this->GetKineByObjectKey(Update->ObjectKey))
 			{
-				BindOriginal->SetLocation( UE::Math::TVector<double>(Update->Position));
-				BindOriginal->SetRotation(UE::Math::TQuat<double>(Update->Rotation));
+				BindOriginal->SetLocationAndRotation( UE::Math::TVector<double>(Update->Position), UE::Math::TQuat<double>(Update->Rotation));
 			}
 			HoldOpen->Dequeue();
 		}

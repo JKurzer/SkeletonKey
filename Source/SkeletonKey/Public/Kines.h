@@ -23,6 +23,7 @@ public:
 	virtual void SetTransformlike(FTransform Input) = 0;
 	virtual void SetLocation( FVector3d Location) = 0;
 	virtual void SetRotation (FQuat4d Rotation) = 0;
+	virtual void SetLocationAndRotation(FVector3d Loc, FQuat4d Rot) = 0;
 	bool IsNull() const { return MyKey == 0;}
 protected:
 	virtual TOptional<FTransform> CopyOfTransformlike_Impl() = 0;
@@ -45,6 +46,16 @@ public:
 		MyKey = Target;
 	}
 
+	virtual void SetLocationAndRotation(FVector3d Loc, FQuat4d Rot) override
+	{
+		TObjectPtr<AActor> Pin;
+		Pin = MySelf.Get();
+		if(Pin)
+		{
+			Pin->SetActorLocationAndRotation(Loc, Rot, false, nullptr, ETeleportType::None);
+		}
+	}
+
 	virtual TOptional<FTransform> CopyOfTransformlike_Impl() override
 	{
 		TObjectPtr<AActor> Pin;
@@ -62,8 +73,7 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			TUniquePtr<FHitResult> MyResult =MakeUnique<FHitResult>();
-			Pin->SetActorTransform(Input, true, MyResult.Get(), ETeleportType::None);
+			Pin->SetActorTransform(Input, false, nullptr, ETeleportType::None);
 		}
 	}
 
@@ -73,8 +83,7 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			TUniquePtr<FHitResult> MyResult =MakeUnique<FHitResult>();
-			Pin->SetActorLocation(Location, true, MyResult.Get(), ETeleportType::None);
+			Pin->SetActorLocation(Location, false, nullptr, ETeleportType::None);
 		}
 	}
 
@@ -84,7 +93,6 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			TUniquePtr<FHitResult> MyResult =MakeUnique<FHitResult>();
 			Pin->SetActorRotation(Rotation, ETeleportType::None);
 		}
 	}
