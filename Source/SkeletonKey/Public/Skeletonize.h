@@ -1,4 +1,4 @@
-//While I call it a key prefix, it's actually a infix for a variety of reasons, mostly because when
+//While I call it a key prefix in a few places, it's actually a infix for a variety of reasons, mostly because when
 //hashfunctions do bias, they tend to MSB-bias their entropy OR fail under modulo.
 //__________________________________________| 0b0000000000000000000000000000000000000000000000000000000000000000;
 //__________________________________________| 0b1111111111111111111111111111111111111111111111111111111111111111;
