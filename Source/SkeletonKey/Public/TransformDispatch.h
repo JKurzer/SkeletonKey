@@ -69,7 +69,11 @@ bool UTransformDispatch::ApplyTransformUpdates(TransformQueuePTR TransformUpdate
 		//process updates from barrage.
 		auto HoldOpen = TransformUpdateQueue;
 
-		//This applies the update from Jolt
+		//This applies the update from Jolt. If this runs to slow, we have three options
+		//1) switch to using render proxies per
+		//https://www.youtube.com/watch?v=JaCf2Qmvy18
+		//2) add tick instruction batching, allowing this to execute in batched fashion
+		//3) add the parallel execute machinery in for "end of frame sync" or parallel execute.
 		while(HoldOpen && !HoldOpen->IsEmpty() && !GetWorld()->bPostTickComponentUpdate)
 		{
 			auto Update = HoldOpen->Peek();
