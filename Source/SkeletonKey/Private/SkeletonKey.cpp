@@ -21,4 +21,4 @@ void FSkeletonKeyModule::ShutdownModule()
 
 #undef LOCTEXT_NAMESPACE
 	
-IMPLEMENT_MODULE(FSkeletonKeyModule, SkeletonKey)
+IMPLEMENT_MODULE(FSkeletonKeyModule, SkeletonKey);

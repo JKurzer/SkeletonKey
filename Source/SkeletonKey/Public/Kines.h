@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "SkeletonTypes.h"
-#include "Editor/DetailCustomizations/Private/ActorComponentDetails.h"
 
 class KineData 
 {
@@ -36,14 +35,6 @@ protected:
 using Kine = KinematicRef;
 
 class ActorKine;
-//oh boy. this template specialization lets us backdoor UActorComponent because FActorComponentTickFunction is a Friend class of UActorComponent.
-//So a template specialization can actually act as though it were a true "friend" class member. I don't think this guy's anyone's friend, though.
-// template <>
-// inline void FActorComponentTickFunction::ExecuteTickHelper<ActorKine>(UActorComponent* Target, bool bTickInEditor, float DeltaTime, ELevelTick TickType, const ActorKine& ExecuteTickFunc)
-// {
-// 	//technically. very technically... this does help us tick. technically. Not.... in the intended way.
-// //
-// }
 
 class ActorKine : public Kine
 {
