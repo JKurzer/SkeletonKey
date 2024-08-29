@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using UnrealBuildTool;
-using UnrealBuildTool.Rules;
 
 public class SkeletonKey : ModuleRules
 {
@@ -16,15 +15,6 @@ public class SkeletonKey : ModuleRules
 				
 			}
 		);
-		//may also need to add an explicit runtime dependency.
-		// Get the engine path. Ends with "Engine/"
-		string engine_path = EngineDirectory;
-		// Now get the base of UE's modules dir (could also be Developer, Editor, ThirdParty)
-		string src_path = engine_path + "\\Source\\Runtime\\";
-		//Don't do this.
-		PublicIncludePaths.Add(src_path + "Engine\\");
-		PublicIncludePaths.Add(src_path + "Engine\\Private\\");
-		PublicIncludePaths.Add(src_path + "Engine\\Private\\LevelTick.cpp");
 
 		PrivateIncludePaths.AddRange(
 			new string[] {
