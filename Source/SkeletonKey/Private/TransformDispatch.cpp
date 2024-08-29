@@ -72,17 +72,8 @@ void UTransformDispatch::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 	ObjectToTransformMapping = MakeShareable(new KineLookup());
 	UE_LOG(LogTemp, Warning, TEXT("Shadow Transforms Subsystem: Online"));
-	BlockRampant->Create(true); //DO NOT USE AUTO RESET FOR THIS. OR REALLY, ANYTHING. BETTER TO FAIL OPEN.
-	BlockRampant->Trigger();
-	//FWorldDelegates::OnWorldPreSendAllEndOfFrameUpdates.AddUObject<UTransformDispatch>(this, &UTransformDispatch::BlockRampancy);
-	//BlockRampant->Trigger();
 }
 
-void UTransformDispatch::BlockRampancy(UWorld* that)
-{
-	BlockRampant->Wait();
-	
-}
 
 void UTransformDispatch::Deinitialize()
 {

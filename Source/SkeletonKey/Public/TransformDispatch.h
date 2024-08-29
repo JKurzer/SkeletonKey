@@ -38,7 +38,6 @@ public:
 	//to call get transform on a kine off the game thread. This might be an actual blocker. There's a way around it, but I'm not in love with it.
 	//todo: add proper shadowing with a **readonly** const copy of the transform after update? That allows us to totally hide barrage
 	TSharedPtr< KineLookup> ObjectToTransformMapping;
-	FEventRef BlockRampant;
 	void ReleaseKineByKey(ObjectKey Target);
 
 	//right now, this is only a helper method, but if we add the read-only copy in the kine itself, we could conceivably
