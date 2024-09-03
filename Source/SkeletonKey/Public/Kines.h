@@ -7,7 +7,8 @@ class KineData
 public:
 	virtual ~KineData() = default;
 	ObjectKey MyKey; 
-	//USE FBUPDATES or FBINPUTS. This is provided for legacy reasons and to make kines useful if you do not use Artillery Barrage.
+	//I don't recommend adding data here, but this base class is provided in case you do not use barrage and need a place to keep shadow or
+	//scratch transforms.
 };
 
 
@@ -57,12 +58,10 @@ public:
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
-				//this doesn't do what it looks like. Check the specialization above. I'm really sorry, but I needed a part of the API that wasn't likely to change.
 				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
 				transform.SetLocation(Loc);
 				transform.SetRotation(Rot);
 				Ref->MarkRenderTransformDirty();
-				//FALSEHOOD_MALEVOLENCE_TRICKERY.ExecuteTickHelper<ActorKine>(Ref, false, 0, ELevelTick::LEVELTICK_PauseTick, *this);
 			}
 		}
 	}
