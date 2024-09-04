@@ -5,6 +5,7 @@
 #include "Containers/CircularQueue.h"
 using BristleTime = long; //this will become uint32. don't bitbash this.
 using ArtilleryTime = BristleTime;
+typedef uint32_t InputStreamKey;
 
 //OBJECT KEY DOES NOT SKELETONIZE AUTOMATICALLY. OTHER KEY TYPES MUST DO THAT.
 class ObjectKey
