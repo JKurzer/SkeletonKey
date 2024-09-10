@@ -3,10 +3,10 @@ Skeletonkey gives us a type annotation system that we can use to integrate any g
   
 So there's never any type ambiguity. This gives us a full type system without reflection, at run time, in constant time and space.
 
-## How?
+### How?
 Skeleton Key is an imaginary basal key "type" used across all libraries maintained by Breach Dogs. These keys may not be generated in consistent ways, and are used across almost every ECS-like component we have made. Ultimately, it was the emergence of the need for an up-projection into the concept of an actor-like key for the purposes of assigning abilities and attributes to non-actors that drove the creation of ObjectKey. Once objectkey existed, it became necessary to provide a way to tell which keys belonged to which keyspace at runtime. Unfortunately, generating guids in a multithreaded multimachine multiOS way is actually quite hard. Instead, we have the Skeleton Key.
 
-## Why Is This A Plugin?
+### Why Is This A Plugin?
 While it's unfortunate that this ended up in a plugin, we need versioning, loading, and dependency assurances. It also means that some of our simpler types like keys and params may move into the skeleton key plugin, which would honestly be nice for making the individual plug-ins less weird. In particular, we currently have BristleTime and ArtilleryTime pulled up to skeletonkey, but it'd be nice to have just StepTime. Without a top level types lib, that's not really elegantly doable in UE+C++ without esoterica that I don't want to employ. Finally, I could see this being expanded to cover certain monomorphizing constants that you really want to be able to adjust at a per-game level and span across plugins, but may not wish to have be configurable. These are quite quite rare, but do exist.  
 
 Finally, SkeletonKey encapsulates the Transform ECS Pillar, and provides a thick wrapper over applying updates to transforms in the form of Kinematic References, or Kines. Kines are a wrapper that hides just who or what a transform belongs to, and combined with the ObjectKey and Transform ECS, you can query and modify the transform of anything in the entire game if you have the key without risk of a NPE or stale reference.
