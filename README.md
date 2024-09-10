@@ -9,6 +9,7 @@ Skeleton Key is an imaginary basal key "type" used across all libraries maintain
 ### Why Is This A Plugin?
 While it's unfortunate that this ended up in a plugin, we need versioning, loading, and dependency assurances. It also means that some of our simpler types like keys and params may move into the skeleton key plugin, which would honestly be nice for making the individual plug-ins less weird. In particular, we currently have BristleTime and ArtilleryTime pulled up to skeletonkey, but it'd be nice to have just StepTime. Without a top level types lib, that's not really elegantly doable in UE+C++ without esoterica that I don't want to employ. Finally, I could see this being expanded to cover certain monomorphizing constants that you really want to be able to adjust at a per-game level and span across plugins, but may not wish to have be configurable. These are quite quite rare, but do exist.  
 
+### Transform ECS Pillar
 Finally, SkeletonKey encapsulates the Transform ECS Pillar, and provides a thick wrapper over applying updates to transforms in the form of Kinematic References, or Kines. Kines are a wrapper that hides just who or what a transform belongs to, and combined with the ObjectKey and Transform ECS, you can query and modify the transform of anything in the entire game if you have the key without risk of a NPE or stale reference.
 
 ## Mechanism
