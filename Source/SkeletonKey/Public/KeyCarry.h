@@ -36,7 +36,7 @@ public:
 	}
 	
 
-	void AttemptRegister()
+	virtual void AttemptRegister()
 	{
 		if(GetWorld())
 		{

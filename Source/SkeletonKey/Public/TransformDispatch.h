@@ -27,10 +27,18 @@ class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 	virtual ~UTransformDispatch() override;
 
 public:
-	//THIS CREATES A COPY FOR THE SHADOW BUT UPDATES THE SHADOW EVERY TICK.
-	//THIS IS NOT CHEAP.
 	void RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Original) const;
 	void RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const;
+
+	//this provides support for new kinds of kines transparent to skeletonkey. kine bravely!
+	//for many many kines, manager is going to be a self pointer, but not all!
+	template <class KineType, class TargetKeyType, class TargetTypeManager>
+	void RegisterObjectToShadowTransform(TargetKeyType Target, TargetTypeManager Manager) const
+	{
+		//explicitly cast to parent type.
+		TSharedPtr<Kine> kine = MakeShareable<KineType>(new KineType(Manager, Target));
+		ObjectToTransformMapping->Add(Target, kine);
+	}
 
 	TSharedPtr<Kine> GetKineByObjectKey(ObjectKey Target);
 	//OBJECT TO TRANSFORM MAPPING IS CALLED FROM MANY THREADS
