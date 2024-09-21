@@ -25,7 +25,6 @@ void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, UAUKi
 	TSharedPtr<Kine> kine = MakeShareable<SwarmKine>(new SwarmKine(Manager, Target));
 	ObjectToTransformMapping->Add(Target, kine);
 }
-
 TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
 {
 	auto ref = ObjectToTransformMapping->Find(Target);
