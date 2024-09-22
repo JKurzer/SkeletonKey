@@ -22,13 +22,13 @@ UCLASS()
 class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
-	ObjectKey DefaultObjectKey;
+	FSkeletonKey DefaultObjectKey;
 	UTransformDispatch();
 	virtual ~UTransformDispatch() override;
 
 public:
-	void RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Original) const;
-	void RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const;
+	void RegisterObjectToShadowTransform(FSkeletonKey Target, TObjectPtr<AActor> Original) const;
+	void RegisterObjectToShadowTransform(FSkeletonKey Target, UAUKineManager* Manager) const;
 
 	//this provides support for new kinds of kines transparent to skeletonkey. kine bravely!
 	//for many many kines, manager is going to be a self pointer, but not all!
@@ -40,17 +40,17 @@ public:
 		ObjectToTransformMapping->Add(Target, kine);
 	}
 
-	TSharedPtr<Kine> GetKineByObjectKey(ObjectKey Target);
+	TSharedPtr<Kine> GetKineByObjectKey(FSkeletonKey Target);
 	//OBJECT TO TRANSFORM MAPPING IS CALLED FROM MANY THREADS
 	//Unfortunately, we ended up needed to hide an actor ref inside the Kine. This means that it's risky at best
 	//to call get transform on a kine off the game thread. This might be an actual blocker. There's a way around it, but I'm not in love with it.
 	//todo: add proper shadowing with a **readonly** const copy of the transform after update? That allows us to totally hide barrage
 	TSharedPtr< KineLookup> ObjectToTransformMapping;
-	void ReleaseKineByKey(ObjectKey Target);
+	void ReleaseKineByKey(FSkeletonKey Target);
 
 	//right now, this is only a helper method, but if we add the read-only copy in the kine itself, we could conceivably
 	//use this as a one-frame conserve without a lock. 
-	TOptional<FTransform3d> CopyOfTransformByObjectKey(ObjectKey Target);
+	TOptional<FTransform3d> CopyOfTransformByObjectKey(FSkeletonKey Target);
 
 	//it's not clear if this can be made safe to call off gamethread. It's an unfortunate state of affairs to be sure.
 	template <class TransformQueuePTR>

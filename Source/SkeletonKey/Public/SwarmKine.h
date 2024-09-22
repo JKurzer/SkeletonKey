@@ -18,7 +18,7 @@ public:
 		: KeyToMesh(), MeshToKey()
 	{
 	}
-	virtual TOptional<FTransform> GetTransformCopy(ObjectKey Target)
+	virtual TOptional<FTransform> GetTransformCopy(FSkeletonKey Target)
 	{
 		auto m = KeyToMesh->Find(Target);
 		FTransform ref;
@@ -31,7 +31,7 @@ public:
 		}
 		return TOptional<FTransform>();
 	};
-	virtual bool SetTransformOnInstance(ObjectKey Target, FTransform Update)
+	virtual bool SetTransformOnInstance(FSkeletonKey Target, FTransform Update)
 	{
 		auto m = KeyToMesh->Find(Target);
 		if(m)
@@ -40,15 +40,15 @@ public:
 		}
 		return  false;
 	};
-	virtual ObjectKey GetKeyOfInstance(FSMInstanceId Target)
+	virtual FSkeletonKey GetKeyOfInstance(FSMInstanceId Target)
 	{
 		auto m = MeshToKey->Find(Target);
-		return m ? *m : ObjectKey();
+		return m ? *m : FSkeletonKey();
 	};
 	
 private:
-	TSharedPtr<TMap<ObjectKey, FSMInstanceId>> KeyToMesh;
-	TSharedPtr<TMap<FSMInstanceId, ObjectKey>> MeshToKey;
+	TSharedPtr<TMap<FSkeletonKey, FSMInstanceId>> KeyToMesh;
+	TSharedPtr<TMap<FSMInstanceId, FSkeletonKey>> MeshToKey;
 };
 
 
@@ -58,7 +58,7 @@ class SwarmKine : public Kine
 	TWeakObjectPtr<UAUKineManager> MyManager;
 
 public:
-	explicit SwarmKine(const TWeakObjectPtr<UAUKineManager>& MyManager, const ObjectKey& MeshInstanceKey)
+	explicit SwarmKine(const TWeakObjectPtr<UAUKineManager>& MyManager, const FSkeletonKey& MeshInstanceKey)
 		: MyManager(MyManager)
 	{
 		MyKey  = MeshInstanceKey;

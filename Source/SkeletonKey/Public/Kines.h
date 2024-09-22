@@ -6,7 +6,7 @@ class KineData
 {
 public:
 	virtual ~KineData() = default;
-	ObjectKey MyKey; 
+	FSkeletonKey MyKey; 
 	//I don't recommend adding data here, but this base class is provided in case you do not use barrage and need a place to keep shadow or
 	//scratch transforms.
 };
@@ -121,4 +121,4 @@ public:
 };
 
 
-using KineLookup = TMap<ObjectKey, TSharedPtr<Kine>>;
+using KineLookup = TMap<FSkeletonKey, TSharedPtr<Kine>>;

@@ -3,33 +3,37 @@
 #include "CoreMinimal.h"
 #include "skeletonize.h"
 #include "Containers/CircularQueue.h"
+#include "SkeletonTypes.generated.h"
 using BristleTime = long; //this will become uint32. don't bitbash this.
 using ArtilleryTime = BristleTime;
 typedef uint32_t InputStreamKey;
 
+
 //OBJECT KEY DOES NOT SKELETONIZE AUTOMATICALLY. OTHER KEY TYPES MUST DO THAT.
-class ObjectKey
+USTRUCT(BlueprintType)
+struct FSkeletonKey
 {
+	GENERATED_BODY()
 	friend class ActorKey;
 public:
 	uint64_t Obj;
-	explicit ObjectKey()
+	explicit FSkeletonKey()
 	{
 		//THIS WILL REGISTER AS NOT AN OBJECT KEY PER SKELETONIZE (SFIX_NONE)
 		Obj = 0;
 	}
-	explicit ObjectKey(uint64 ObjIn)
+	explicit FSkeletonKey(uint64 ObjIn)
 	{
 		Obj=ObjIn;
 	}
 	operator uint64() const {return Obj;};
 	operator ActorKey() const;
-	friend uint32 GetTypeHash(const ObjectKey& Other)
+	friend uint32 GetTypeHash(const FSkeletonKey& Other)
 	{
 		//while it looks like typehash can return uint64, it's undocumented and doesn't appear to work right.
 		return GetTypeHash(Other.Obj);
 	}
-	ObjectKey& operator=(const ObjectKey& rhs) {
+	FSkeletonKey& operator=(const FSkeletonKey& rhs) {
 		if (this != &rhs) {
 			Obj = rhs.Obj;
 		}
@@ -38,27 +42,27 @@ public:
 
 	//todo: add templated From method once this is settled enough.
 	
-	ObjectKey& operator=(const ActorKey& rhs);
+	FSkeletonKey& operator=(const ActorKey& rhs);
 
-	ObjectKey& operator=(const uint64 rhs) {
+	FSkeletonKey& operator=(const uint64 rhs) {
 		Obj = rhs;
 		return *this;
 	}
 };
 
 
-static bool operator<(ObjectKey const& lhs, ObjectKey const& rhs) {
+static bool operator<(FSkeletonKey const& lhs, FSkeletonKey const& rhs) {
 	return (lhs.Obj < rhs.Obj);
 }
 
-static bool operator==(ObjectKey const& lhs, ObjectKey const& rhs) {
+static bool operator==(FSkeletonKey const& lhs, FSkeletonKey const& rhs) {
 	return (lhs.Obj == rhs.Obj);
 }
 
 
 class ActorKey
 {
-	friend class ObjectKey;
+	friend struct FSkeletonKey;
 public:
 	uint64_t Obj;
 	explicit ActorKey()
@@ -80,7 +84,7 @@ public:
 		Obj=FORGE_SKELETON_KEY(ObjIn, SKELLY::SFIX_ART_ACTS);
 	}
 	operator uint64() const {return Obj;};
-	operator ObjectKey() const {return ObjectKey(Obj);};
+	operator FSkeletonKey() const {return FSkeletonKey(Obj);};
 	friend uint32 GetTypeHash(const ActorKey& Other)
 	{
 		//it looks like get type hash can be a 64bit return? 
@@ -108,21 +112,21 @@ public:
 		}
 		return *this;
 	}
-	ActorKey& operator=(const ObjectKey& rhs) {
+	ActorKey& operator=(const FSkeletonKey& rhs) {
 		//should be idempotent.
 		Obj = FORGE_SKELETON_KEY(rhs.Obj, SKELLY::SFIX_ART_ACTS);
 		return *this;
 	}
 };
-static bool operator<(ActorKey const& lhs, ObjectKey const& rhs) {
+static bool operator<(ActorKey const& lhs, FSkeletonKey const& rhs) {
 	return (lhs.Obj < rhs.Obj);
 }
 
-inline ObjectKey::operator ActorKey() const
+inline FSkeletonKey::operator ActorKey() const
 {return ActorKey(Obj);}
 
 //FOR LEGACY REASONS, this applies the skeletonization.
-inline ObjectKey& ObjectKey::operator=(const ActorKey& rhs)
+inline FSkeletonKey& FSkeletonKey::operator=(const ActorKey& rhs)
 {
 	Obj = FORGE_SKELETON_KEY(rhs.Obj, SKELLY::SFIX_ART_ACTS);
 	return *this;
@@ -134,12 +138,16 @@ static bool operator==(ActorKey const& lhs, ActorKey const& rhs) {
 
 struct TransformUpdate
 {
-	ObjectKey ObjectKey;
+	FSkeletonKey ObjectKey;
 	uint64 sequence;
 	FQuat4f Rotation;// this alignment looks wrong. Like outright wrong.
 	FVector3f Position;
 	uint32 speed;// unused at the moment, here to support smearing if needed.
 };
+
+//Engine\Source\Runtime\CoreUObject\Public\UObject\FObjectKey is the vanilla UE equivalent.
+//Unfortunately, it's pretty heavy, since it's intended to operate in more circumstances. It requires a template arg
+//to operate, which makes it ill-suited to the truly loose coupling we're after here.
 
 using TransformUpdatesForGameThread = TCircularQueue<TransformUpdate>;
 

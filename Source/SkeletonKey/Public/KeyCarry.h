@@ -17,12 +17,12 @@ UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), DefaultToInstanc
 class SKELETONKEY_API UKeyCarry : public UActorComponent
 {
 	GENERATED_BODY()
-	ObjectKey MyObjectKey;
+	FSkeletonKey MyObjectKey;
 public:
 	DECLARE_MULTICAST_DELEGATE(ActorKeyIsReady)
 	 ActorKeyIsReady Retry_Notify;
 	bool isReady = false;
-	ObjectKey GetObjectKey()
+	FSkeletonKey GetObjectKey()
 	{
 		return MyObjectKey;
 	}
@@ -71,7 +71,7 @@ public:
 	}
 	
 	//will return an invalid object key if it fails.
-	static inline ObjectKey KeyOf(AActor* That)
+	static inline FSkeletonKey KeyOf(AActor* That)
 	{
 	if(That)
 	{
@@ -80,7 +80,7 @@ public:
 			return That->GetComponentByClass<UKeyCarry>()->MyObjectKey;
 		}
 	}
-	return ObjectKey();
+	return FSkeletonKey();
 	}
 
 	virtual void InitializeComponent() override
@@ -105,7 +105,7 @@ public:
 	};
 
 	//will return an invalid object key if it fails.
-	static inline ObjectKey KeyOf(UActorComponent* Me)
+	static inline FSkeletonKey KeyOf(UActorComponent* Me)
 	{
 		if(Me && Me->GetOwner())
 		{
@@ -115,7 +115,7 @@ public:
 				return ptr->MyObjectKey;
 			}
 		}
-		return ObjectKey();
+		return FSkeletonKey();
 	}
 	
 	virtual void BeginDestroy() override

@@ -12,20 +12,20 @@ UTransformDispatch::~UTransformDispatch()
 	
 }
 
-void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, TObjectPtr<AActor> Self) const
+void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, TObjectPtr<AActor> Self) const
 {
 	//explicitly cast to parent type.
 	TSharedPtr<Kine> kine = MakeShareable<ActorKine>(new ActorKine(Self, Target));
 	ObjectToTransformMapping->Add(Target, kine);
 }
 
-void UTransformDispatch::RegisterObjectToShadowTransform(ObjectKey Target, UAUKineManager* Manager) const
+void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, UAUKineManager* Manager) const
 {
 	//explicitly cast to parent type.
 	TSharedPtr<Kine> kine = MakeShareable<SwarmKine>(new SwarmKine(Manager, Target));
 	ObjectToTransformMapping->Add(Target, kine);
 }
-TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
+TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(FSkeletonKey Target)
 {
 	auto ref = ObjectToTransformMapping->Find(Target);
 	if(ref)
@@ -36,7 +36,7 @@ TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(ObjectKey Target)
 }
 
 //actual release happens 
-void UTransformDispatch::ReleaseKineByKey(ObjectKey Target)
+void UTransformDispatch::ReleaseKineByKey(FSkeletonKey Target)
 {
 	if(Target)
 	{
@@ -45,13 +45,13 @@ void UTransformDispatch::ReleaseKineByKey(ObjectKey Target)
 		{
 			TSharedPtr<Kine>* ref = HoldOpen->Find(Target);
 			if(ref && *ref){
-				ref->Get()->MyKey = ObjectKey();
+				ref->Get()->MyKey = FSkeletonKey();
 			}
 		}
 	}
 }
 
-TOptional<FTransform> UTransformDispatch::CopyOfTransformByObjectKey(ObjectKey Target) 
+TOptional<FTransform> UTransformDispatch::CopyOfTransformByObjectKey(FSkeletonKey Target) 
 {
 	auto ref = ObjectToTransformMapping->Find(Target);
 	if(ref)
