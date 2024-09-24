@@ -59,6 +59,7 @@ public:
 						MyObjectKey = TopLevelActorKey;
 						xRef->RegisterObjectToShadowTransform(MyObjectKey ,actorRef);
 						isReady = true;
+						actorRef->GetRootComponent()->bNeverNeedsRenderUpdate = false;
 						if(Retry_Notify.IsBound())
 						{
 							Retry_Notify.Broadcast();

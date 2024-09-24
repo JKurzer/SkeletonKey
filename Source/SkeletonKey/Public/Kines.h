@@ -58,9 +58,10 @@ public:
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
-				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
+				auto transform = Ref->GetComponentTransform();
 				transform.SetLocation(Loc);
 				transform.SetRotation(Rot);
+				Ref->SetWorldTransform(transform);
 				Ref->MarkRenderTransformDirty();
 			}
 		}
@@ -97,9 +98,9 @@ public:
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
-				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
+				auto transform = Ref->GetComponentTransform();
 				transform.SetLocation(Location);
-				Ref->MarkRenderTransformDirty();
+				Ref->SetWorldTransform(transform);
 			}
 		}
 	}
@@ -114,9 +115,9 @@ public:
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
-				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
+				auto transform = Ref->GetComponentTransform();
 				transform.SetRotation(Rotation);
-				Ref->MarkRenderTransformDirty();
+				Ref->SetWorldTransform(transform);
 			}
 		}
 	}
