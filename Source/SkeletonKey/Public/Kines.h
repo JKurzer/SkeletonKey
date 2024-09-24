@@ -55,16 +55,14 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			Pin->SetActorLocationAndRotation(Loc, Rot);
-			// TODO: evaluate whether this is right or not, but this seems to work
-			/**auto Ref = Pin->GetRootComponent();
+			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
 				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
 				transform.SetLocation(Loc);
 				transform.SetRotation(Rot);
 				Ref->MarkRenderTransformDirty();
-			}**/
+			}
 		}
 	}
 
@@ -95,15 +93,14 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			Pin->SetActorLocation(Location, false, nullptr, ETeleportType::None);
-			/**
+
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
 				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
 				transform.SetLocation(Location);
 				Ref->MarkRenderTransformDirty();
-			}**/
+			}
 		}
 	}
 
@@ -113,15 +110,14 @@ public:
 		Pin = MySelf.Get();
 		if(Pin)
 		{
-			Pin->SetActorRotation(Rotation, ETeleportType::None);
-			/**
+			
 			auto Ref = Pin->GetRootComponent();
 			if(Ref)
 			{
 				auto& transform = const_cast<FTransform&>(Ref->GetComponentTransform());
 				transform.SetRotation(Rotation);
 				Ref->MarkRenderTransformDirty();
-			}**/
+			}
 		}
 	}
 };
