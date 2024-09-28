@@ -22,6 +22,8 @@ public:
 	DECLARE_MULTICAST_DELEGATE(ActorKeyIsReady)
 	 ActorKeyIsReady Retry_Notify;
 	bool isReady = false;
+
+	UFUNCTION(BlueprintCallable)
 	FSkeletonKey GetObjectKey()
 	{
 		return MyObjectKey;
