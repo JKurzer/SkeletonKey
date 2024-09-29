@@ -19,7 +19,7 @@ void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, TO
 	ObjectToTransformMapping->Add(Target, kine);
 }
 
-void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, UAUKineManager* Manager) const
+void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, USwarmKineManager* Manager) const
 {
 	//explicitly cast to parent type.
 	TSharedPtr<Kine> kine = MakeShareable<SwarmKine>(new SwarmKine(Manager, Target));

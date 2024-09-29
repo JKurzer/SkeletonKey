@@ -28,7 +28,7 @@ class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 
 public:
 	void RegisterObjectToShadowTransform(FSkeletonKey Target, TObjectPtr<AActor> Original) const;
-	void RegisterObjectToShadowTransform(FSkeletonKey Target, UAUKineManager* Manager) const;
+	void RegisterObjectToShadowTransform(FSkeletonKey Target, USwarmKineManager* Manager) const;
 
 	//this provides support for new kinds of kines transparent to skeletonkey. kine bravely!
 	//for many many kines, manager is going to be a self pointer, but not all!
