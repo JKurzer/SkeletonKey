@@ -10,14 +10,17 @@ class UObject;
 //interface that adds support for owning swarm kines. used for managing many many meshes at a time.
 //generally, 
 UCLASS()
-class SKELETONKEY_API UAUKineManager : public UInstancedStaticMeshComponent
+class SKELETONKEY_API USwarmKineManager : public UInstancedStaticMeshComponent
 {
 	GENERATED_BODY()
 public:
-	explicit UAUKineManager()
+	explicit USwarmKineManager()
 		: KeyToMesh(), MeshToKey()
 	{
+		KeyToMesh = MakeShareable(new TMap<FSkeletonKey, FSMInstanceId>());
+		MeshToKey = MakeShareable(new TMap<FSMInstanceId, FSkeletonKey>());
 	}
+	
 	virtual TOptional<FTransform> GetTransformCopy(FSkeletonKey Target)
 	{
 		auto m = KeyToMesh->Find(Target);
@@ -38,13 +41,29 @@ public:
 		{
 			return SetSMInstanceTransform(*m, Update, true, true, true);
 		}
-		return  false;
+		return false;
 	};
 	virtual FSkeletonKey GetKeyOfInstance(FSMInstanceId Target)
 	{
 		auto m = MeshToKey->Find(Target);
 		return m ? *m : FSkeletonKey();
 	};
+
+	virtual void AddToMap(FSMInstanceId MeshId, FSkeletonKey Key)
+	{
+		KeyToMesh->Add(Key, MeshId);
+		MeshToKey->Add(MeshId, Key);
+	}
+
+	virtual void CleanupInstance(const FSkeletonKey Target)
+	{
+		auto m = KeyToMesh->Find(Target);
+		if (m != nullptr)
+		{
+			MeshToKey->Remove(*m);
+		}
+		KeyToMesh->Remove(Target);
+	}
 	
 private:
 	TSharedPtr<TMap<FSkeletonKey, FSMInstanceId>> KeyToMesh;
@@ -55,10 +74,10 @@ private:
 class SwarmKine : public Kine
 {
 
-	TWeakObjectPtr<UAUKineManager> MyManager;
+	TWeakObjectPtr<USwarmKineManager> MyManager;
 
 public:
-	explicit SwarmKine(const TWeakObjectPtr<UAUKineManager>& MyManager, const FSkeletonKey& MeshInstanceKey)
+	explicit SwarmKine(const TWeakObjectPtr<USwarmKineManager>& MyManager, const FSkeletonKey& MeshInstanceKey)
 		: MyManager(MyManager)
 	{
 		MyKey  = MeshInstanceKey;
