@@ -25,14 +25,23 @@ void UTransformDispatch::RegisterObjectToShadowTransform(FSkeletonKey Target, UA
 	TSharedPtr<Kine> kine = MakeShareable<SwarmKine>(new SwarmKine(Manager, Target));
 	ObjectToTransformMapping->Add(Target, kine);
 }
-TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(FSkeletonKey Target)
+
+TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(FSkeletonKey Target) const
 {
-	auto ref = ObjectToTransformMapping->Find(Target);
-	if(ref)
-	{
-		return  *ref;
-	}
-	return nullptr;
+	TSharedPtr<KinematicRef>* ref = ObjectToTransformMapping->Find(Target);
+	return ref ? *ref : nullptr;
+}
+
+TSharedPtr<ActorKine> UTransformDispatch::GetActorKineByObjectKey(FSkeletonKey Target) const
+{
+	TSharedPtr<Kine>* ref = ObjectToTransformMapping->Find(Target);
+	return ref ? MakeShareable<ActorKine>(reinterpret_cast<ActorKine*>(ref->Get())) : nullptr;
+}
+
+TWeakObjectPtr<AActor> UTransformDispatch::GetAActorByObjectKey(FSkeletonKey Target) const
+{
+	TSharedPtr<ActorKine> ActorKinePtr = GetActorKineByObjectKey(Target);
+	return ActorKinePtr.IsValid() ? ActorKinePtr->MySelf : nullptr;
 }
 
 //actual release happens 
