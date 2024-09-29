@@ -35,7 +35,8 @@ TSharedPtr<Kine> UTransformDispatch::GetKineByObjectKey(FSkeletonKey Target) con
 TSharedPtr<ActorKine> UTransformDispatch::GetActorKineByObjectKey(FSkeletonKey Target) const
 {
 	TSharedPtr<Kine>* ref = ObjectToTransformMapping->Find(Target);
-	return ref ? MakeShareable<ActorKine>(reinterpret_cast<ActorKine*>(ref->Get())) : nullptr;
+	// TODO: this isn't safe, will probably throw if its not actually an ActorKine
+	return ref ? StaticCastSharedPtr<ActorKine>(*ref) : nullptr;
 }
 
 TWeakObjectPtr<AActor> UTransformDispatch::GetAActorByObjectKey(FSkeletonKey Target) const
