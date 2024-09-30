@@ -49,7 +49,14 @@ public:
 		return *this;
 	}
 };
-
+template<>
+struct std::hash<FSkeletonKey>
+{
+	std::size_t operator()(const FSkeletonKey& other) const noexcept
+	{
+		return GetTypeHash(other);
+	}
+};
 
 static bool operator<(FSkeletonKey const& lhs, FSkeletonKey const& rhs) {
 	return (lhs.Obj < rhs.Obj);
