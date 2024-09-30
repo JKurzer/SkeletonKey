@@ -2,6 +2,7 @@
 #include "SkeletonTypes.h"
 #include "Kines.h"
 #include "CoreMinimal.h"
+#include "InstanceDataTypes.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "SwarmKine.generated.h"
 
@@ -17,8 +18,14 @@ public:
 	explicit USwarmKineManager()
 		: KeyToMesh(), MeshToKey()
 	{
-		KeyToMesh = MakeShareable(new TMap<FSkeletonKey, FSMInstanceId>());
-		MeshToKey = MakeShareable(new TMap<FSMInstanceId, FSkeletonKey>());
+		KeyToMesh = MakeShareable(new TMap<FSkeletonKey, int32>());
+		MeshToKey = MakeShareable(new TMap<int32, FSkeletonKey>());
+	}
+
+	// No chaos physics for you
+	virtual bool ShouldCreatePhysicsState() const override
+	{
+		return false;
 	}
 	
 	virtual TOptional<FTransform> GetTransformCopy(FSkeletonKey Target)
@@ -27,7 +34,7 @@ public:
 		FTransform ref;
 		if(m)
 		{
-			if (GetInstanceTransform(m->InstanceIndex, ref, true))
+			if (GetInstanceTransform(GetInstanceIndexForId(FPrimitiveInstanceId(*m)), ref, true))
 			{
 				return ref;
 			}
@@ -39,35 +46,38 @@ public:
 		auto m = KeyToMesh->Find(Target);
 		if(m)
 		{
-			return SetSMInstanceTransform(*m, Update, true, true, true);
+			return UpdateInstanceTransform(GetInstanceIndexForId(FPrimitiveInstanceId(*m)), Update, true, true, true);
 		}
 		return false;
 	};
-	virtual FSkeletonKey GetKeyOfInstance(FSMInstanceId Target)
+	virtual FSkeletonKey GetKeyOfInstance(FPrimitiveInstanceId Target)
 	{
-		auto m = MeshToKey->Find(Target);
+		auto m = MeshToKey->Find(Target.Id);
 		return m ? *m : FSkeletonKey();
 	};
 
-	virtual void AddToMap(FSMInstanceId MeshId, FSkeletonKey Key)
+	virtual void AddToMap(FPrimitiveInstanceId MeshId, FSkeletonKey Key)
 	{
-		KeyToMesh->Add(Key, MeshId);
-		MeshToKey->Add(MeshId, Key);
+		UE_LOG(LogTemp, Warning, TEXT("Adding ISM instance #%i"), MeshId.Id);
+		KeyToMesh->Add(Key, MeshId.Id);
+		MeshToKey->Add(MeshId.Id, Key);
 	}
 
 	virtual void CleanupInstance(const FSkeletonKey Target)
 	{
-		auto m = KeyToMesh->Find(Target);
-		if (m != nullptr)
+		auto HoldOpen = KeyToMesh;
+		if (HoldOpen)
 		{
-			MeshToKey->Remove(*m);
+			auto m = KeyToMesh->FindRef(Target);
+			MeshToKey->Remove(m);
+			RemoveInstanceById(FPrimitiveInstanceId(m));
+			KeyToMesh->Remove(Target);
 		}
-		KeyToMesh->Remove(Target);
 	}
 	
 private:
-	TSharedPtr<TMap<FSkeletonKey, FSMInstanceId>> KeyToMesh;
-	TSharedPtr<TMap<FSMInstanceId, FSkeletonKey>> MeshToKey;
+	TSharedPtr<TMap<FSkeletonKey, int32>> KeyToMesh;
+	TSharedPtr<TMap<int32, FSkeletonKey>> MeshToKey;
 };
 
 
