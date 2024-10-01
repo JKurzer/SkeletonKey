@@ -23,10 +23,13 @@ class SKELETONKEY_API UTransformDispatch : public UTickableWorldSubsystem
 {
 	GENERATED_BODY()
 	FSkeletonKey DefaultObjectKey;
+	
 	UTransformDispatch();
 	virtual ~UTransformDispatch() override;
 
 public:
+	//honestly, it's gonna get used everywhere. You break it, you buy it.
+	static inline UTransformDispatch* SelfPtr = nullptr;
 	void RegisterObjectToShadowTransform(FSkeletonKey Target, TObjectPtr<AActor> Original) const;
 	void RegisterObjectToShadowTransform(FSkeletonKey Target, USwarmKineManager* Manager) const;
 

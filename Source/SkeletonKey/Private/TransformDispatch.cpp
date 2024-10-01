@@ -86,12 +86,14 @@ void UTransformDispatch::Initialize(FSubsystemCollectionBase& Collection)
 
 void UTransformDispatch::Deinitialize()
 {
+	SelfPtr = nullptr;
 	Super::Deinitialize();
 }
 
 void UTransformDispatch::OnWorldBeginPlay(UWorld& InWorld)
 {
 	Super::OnWorldBeginPlay(InWorld);
+	SelfPtr = this;
 }
 
 void UTransformDispatch::PostInitialize()
